@@ -5,10 +5,7 @@ const app = express();
 const PORT = 3000;
 
 // Connect to MongoDB (Make sure MongoDB is running on your system)
-mongoose.connect('mongodb+srv://baranidharanofficial:xvGpoNWidICzP7I5@training.liykfwa.mongodb.net/', {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-});
+mongoose.connect('mongodb+srv://baranidharanofficial:xvGpoNWidICzP7I5@training.liykfwa.mongodb.net/');
 const db = mongoose.connection;
 
 db.on('error', console.error.bind(console, 'MongoDB connection error:'));
@@ -53,7 +50,7 @@ app.post('/users', async (req, res) => {
         console.log(newUser.phone);
         console.log(newUser.location);
         await newUser.save();
-        res.status(201).json({ message: 'User details uploaded successfully' });
+        res.status(201).json({ message: 'User details uploaded successfully', user: req.body });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
