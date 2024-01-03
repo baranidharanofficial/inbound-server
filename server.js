@@ -48,7 +48,10 @@ app.post('/users', async (req, res) => {
         const { uid, name, email, phone, location, company, role, color, portfolio, linkedin, instagram, facebook, github, quora, medium, stack, x } = req.body;
         const newUser = new User({ uid, name, email, phone, location, company, role, color, portfolio, linkedin, instagram, facebook, github, quora, medium, stack, x });
 
-        console.log(newUser);
+        console.log(newUser.name);
+        console.log(newUser.email);
+        console.log(newUser.phone);
+        console.log(newUser.location);
         await newUser.save();
         res.status(201).json({ message: 'User details uploaded successfully' });
     } catch (error) {
