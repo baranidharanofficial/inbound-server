@@ -18,6 +18,7 @@ db.once('open', () => {
 
 // Define a schema for user details
 const userSchema = new mongoose.Schema({
+    uid: String,
     name: String,
     email: String,
     phone: String,
@@ -44,8 +45,8 @@ app.use(express.json());
 // Endpoint to upload user details
 app.post('/users', async (req, res) => {
     try {
-        const { name, email, phone, location, company, role, color, portfolio, linkedin, instagram, facebook, github, quora, medium, stack, x } = req.body;
-        const newUser = new User({ name, email, phone, location, company, role, color, portfolio, linkedin, instagram, facebook, github, quora, medium, stack, x });
+        const { uid, name, email, phone, location, company, role, color, portfolio, linkedin, instagram, facebook, github, quora, medium, stack, x } = req.body;
+        const newUser = new User({ uid, name, email, phone, location, company, role, color, portfolio, linkedin, instagram, facebook, github, quora, medium, stack, x });
         await newUser.save();
         res.status(201).json({ message: 'User details uploaded successfully' });
     } catch (error) {
