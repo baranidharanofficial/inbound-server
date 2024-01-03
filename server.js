@@ -66,6 +66,18 @@ app.get('/users', async (req, res) => {
     }
 });
 
+app.get('/users/:uid', async (req, res) => {
+    try {
+        const user = await User.findOne({ uid: req.params.uid });
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+        res.json(user);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
 // Start the server
 app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
