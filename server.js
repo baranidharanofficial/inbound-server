@@ -79,7 +79,7 @@ app.get('/users/:uid', async (req, res) => {
     }
 });
 
-app.post('/users/:receiverId/add-friend/:senderId', async (req, res) => {
+app.post('/users/:receiverId/add-connect/:senderId', async (req, res) => {
     try {
         const { senderId, receiverId } = req.params;
 
