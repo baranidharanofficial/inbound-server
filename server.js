@@ -32,6 +32,7 @@ const userSchema = new mongoose.Schema({
     medium: String,
     stack: String,
     x: String,
+    friends: [{ type: mongoose.Schema.Types.ObjectId, ref: 'inbound-user' }],
 });
 
 const User = mongoose.model('inbound-user', userSchema);
@@ -77,6 +78,34 @@ app.get('/users/:uid', async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 });
+
+app.post('/users/:userId/add-friend/:friendId', async (req, res) => {
+    try {
+        const { userId, friendId } = req.params;
+
+        // Find the user and friend based on their IDs
+        const user = await User.findById(userId);
+        const friend = await User.findById(friendId);
+
+        if (!user || !friend) {
+            return res.status(404).json({ message: 'User or friend not found' });
+        }
+
+        // Check if the friend is already in the user's friends list
+        if (user.friends.includes(friendId)) {
+            return res.status(400).json({ message: 'Friend already added' });
+        }
+
+        // Add the friend to the user's friends list
+        user.friends.push(friend);
+        await user.save();
+
+        res.status(200).json({ message: 'Friend added successfully', user: user });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
 
 // Start the server
 app.listen(PORT, () => {
