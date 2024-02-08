@@ -32,7 +32,7 @@ const userSchema = new mongoose.Schema({
     medium: String,
     stack: String,
     x: String,
-    connections: [{ type: mongoose.Schema.Types.ObjectId, ref: 'inbound-user' }],
+    connects: [{ type: mongoose.Schema.Types.ObjectId, ref: 'inbound-user' }],
 });
 
 const User = mongoose.model('inbound-user', userSchema);
@@ -92,12 +92,12 @@ app.post('/users/:userId/add-connect/:connectId', async (req, res) => {
         }
 
         // Check if the friend is already in the user's friends list
-        if (user.connections.includes(connectId)) {
+        if (user.connects.includes(connectId)) {
             return res.status(400).json({ message: 'Connect already added' });
         }
 
         // Add the friend to the user's friends list
-        user.connections.push(connect);
+        user.connects.push(connect);
         await user.save();
 
         res.status(200).json({ message: 'Connect added successfully', user: user });
