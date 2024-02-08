@@ -79,33 +79,6 @@ app.get('/users/:uid', async (req, res) => {
     }
 });
 
-app.post('/users/:userId/add-connect/:connectId', async (req, res) => {
-    try {
-        const { userId, connectId } = req.params;
-
-        // Find the user and friend based on their IDs
-        const user = await User.findById(userId);
-        const connect = await User.findById(connectId);
-
-        if (!user || !connect) {
-            return res.status(404).json({ message: 'User or connect not found' });
-        }
-
-        // Check if the friend is already in the user's friends list
-        if (user.connects.includes(connectId)) {
-            return res.status(400).json({ message: 'Connect already added' });
-        }
-
-        // Add the friend to the user's friends list
-        user.connects.push(connect);
-        await user.save();
-
-        res.status(200).json({ message: 'Connect added successfully', user: user });
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-});
-
 app.post('/users/:receiverId/add-friend/:senderId', async (req, res) => {
     try {
         const { senderId, receiverId } = req.params;
