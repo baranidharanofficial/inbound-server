@@ -116,6 +116,27 @@ app.post('/users/:receiverId/add-connect/:senderId', async (req, res) => {
 });
 
 
+app.get('/users/:userId/friends', async (req, res) => {
+    try {
+        const userId = req.params.userId;
+
+        // Find the user based on the provided user ID
+        const user = await User.findById(userId).populate('friends', 'name email'); // Populate friends with selected fields (name, email)
+
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        // Return the friend list of the user
+        const friends = user.friends;
+        res.status(200).json({ friends: friends });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+
+
 
 // Start the server
 app.listen(PORT, () => {
