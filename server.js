@@ -116,24 +116,45 @@ app.post('/users/:receiverId/add-connect/:senderId', async (req, res) => {
 });
 
 
+// Endpoint to retrieve the connect list of a user
 app.get('/users/:userId/connects', async (req, res) => {
     try {
         const userId = req.params.userId;
 
         // Find the user based on the provided user ID
-        const user = await User.findById(userId).populate('connects', 'name email'); // Populate friends with selected fields (name, email)
+        const user = await User.findById(userId).populate('connects');
 
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
 
-        // Return the friend list of the user
-        const connects = user.connects;
+        // Extract connect details with all fields
+        const connects = user.connects.map(connect => ({
+            uid: connect.uid,
+            name: connect.name,
+            email: connect.email,
+            phone: connect.phone,
+            location: connect.location,
+            company: connect.company,
+            role: connect.role,
+            color: connect.color,
+            portfolio: connect.portfolio,
+            linkedin: connect.linkedin,
+            instagram: connect.instagram,
+            facebook: connect.facebook,
+            github: connect.github,
+            quora: connect.quora,
+            medium: connect.medium,
+            stack: connect.stack,
+            x: connect.x
+        }));
+
         res.status(200).json({ data: connects });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
 });
+
 
 
 
