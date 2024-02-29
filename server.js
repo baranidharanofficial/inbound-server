@@ -37,7 +37,8 @@ const userSchema = new mongoose.Schema({
 
 const connectSchema = new mongoose.Schema({
     userId: String,
-    connects: [{ type: mongoose.Schema.Types.ObjectId, ref: 'inbound-user' }],
+    categories: Array,
+    connects: [{ user: { type: mongoose.Schema.Types.ObjectId, ref: 'inbound-user' }, categories: [] },],
 });
 
 const User = mongoose.model('inbound-user', userSchema);
@@ -97,6 +98,50 @@ app.get('/users/get-connects/:uid', async (req, res) => {
     }
 });
 
+app.post('/users/add-category/:uid/:category', async (req, res) => {
+    try {
+        console.log(req.params.category);
+
+        const userConnects = await Connects.findById({ userId: req.params.uid });
+
+        if (!userConnects) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        if (!userConnects.categories.includes(req.params.category)) {
+            userConnects.categories.push(req.params.category);
+        }
+
+        await userConnects.save();
+        res.json(userConnects);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+app.post('/users/add-user-to-category/:uid/:cid/:category', async (req, res) => {
+    try {
+        console.log(req.params.category);
+
+        const userConnects = await Connects.findOne({ userId: req.params.uid }).populate('connects');;
+
+        if (!userConnects) {
+            return res.status(404).json({ message: 'User co not found' });
+        }
+
+        userConnects.connects.forEach(connect => {
+            if (connect._id === req.params.cid) {
+                connect.categories.push(req.params.category);
+            }
+        });
+
+        await userConnects.save();
+        res.json(userConnects);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
 app.post('/users/:receiverId/add-connect/:senderId', async (req, res) => {
     try {
         const { senderId, receiverId } = req.params;
@@ -113,26 +158,26 @@ app.post('/users/:receiverId/add-connect/:senderId', async (req, res) => {
         const nsender = await Connects.findOne({ userId: senderId });
         const nreceiver = await Connects.findOne({ userId: receiverId });
 
-        if (nreceiver.connects.includes(senderId)) {
+        if (nreceiver.connects.filter(connect => connect._id == senderId).length > 0) {
             return res.status(400).json({ message: 'Already Connected' });
         }
 
         if (!nsender) {
-            const newConnect = new Connects({ userId: senderId, connects: [receiver] });
+            const newConnect = new Connects({ userId: senderId, connects: [{ user: receiver, categories: [] }] });
             await newConnect.save();
             console.log('TEST 1');
         } else {
-            nsender.connects.push(receiver);
+            nsender.connects.push({ user: receiver, categories: [] });
             await nsender.save();
             console.log('TEST 2');
         }
 
         if (!nreceiver) {
-            const newConnect = new Connects({ userId: receiverId, connects: [sender] });
+            const newConnect = new Connects({ userId: receiverId, connects: [{ user: sender, categories: [] }] });
             await newConnect.save();
             console.log('TEST 3');
         } else {
-            nreceiver.connects.push(sender);
+            nreceiver.connects.push({ user: sender, categories: [] });
             await nreceiver.save();
             console.log('TEST 4');
         }
