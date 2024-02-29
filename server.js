@@ -35,7 +35,14 @@ const userSchema = new mongoose.Schema({
     connects: [{ type: mongoose.Schema.Types.ObjectId, ref: 'inbound-user' }],
 });
 
+
+const connectSchema = new mongoose.Schema({
+    id: String,
+    connects: [{ type: mongoose.Schema.Types.ObjectId, ref: 'inbound-user' }],
+});
+
 const User = mongoose.model('inbound-user', userSchema);
+const Connects = mongoose.model('connects', connectSchema);
 
 // Middleware to parse JSON
 app.use(express.json());
@@ -89,6 +96,24 @@ app.post('/users/:receiverId/add-connect/:senderId', async (req, res) => {
 
         if (!sender || !receiver) {
             return res.status(404).json({ message: 'Sender or receiver not found' });
+        }
+
+        // Find the sender and receiver based on their IDs
+        const nsender = await Connects.find({ id: senderId });
+        const nreceiver = await Connects.find({ id: receiverId });
+
+        if (!nsender) {
+            const newConnect = new Connects({ id: senderId, connects: [receiver] });
+            await newConnect.save();
+        } else {
+            nsender.push(receiver);
+        }
+
+        if (!nreceiver) {
+            const newConnect = new Connects({ id: receiverId, connects: [sender] });
+            await newConnect.save();
+        } else {
+            nreceiver.push(sender);
         }
 
         // Check if the sender is already a friend of the receiver
