@@ -102,7 +102,7 @@ app.post('/users/add-category/:uid/:category', async (req, res) => {
     try {
         console.log(req.params.category);
 
-        const userConnects = await Connects.findById({ userId: req.params.uid });
+        const userConnects = await Connects.findOne({ userId: req.params.uid });
 
         if (!userConnects) {
             return res.status(404).json({ message: 'User not found' });
@@ -121,16 +121,17 @@ app.post('/users/add-category/:uid/:category', async (req, res) => {
 
 app.post('/users/add-user-to-category/:uid/:cid/:category', async (req, res) => {
     try {
-        console.log(req.params.category);
+        // console.log(req.params.category);
 
-        const userConnects = await Connects.findOne({ userId: req.params.uid }).populate('connects');;
+        const userConnects = await Connects.findOne({ userId: req.params.uid });
 
         if (!userConnects) {
             return res.status(404).json({ message: 'User co not found' });
         }
 
         userConnects.connects.forEach(connect => {
-            if (connect._id === req.params.cid) {
+            console.log(connect.user._id.toString());
+            if (connect.user._id.toString() === req.params.cid) {
                 connect.categories.push(req.params.category);
             }
         });
@@ -158,9 +159,9 @@ app.post('/users/:receiverId/add-connect/:senderId', async (req, res) => {
         const nsender = await Connects.findOne({ userId: senderId });
         const nreceiver = await Connects.findOne({ userId: receiverId });
 
-        if (nreceiver.connects.filter(connect => connect._id == senderId).length > 0) {
-            return res.status(400).json({ message: 'Already Connected' });
-        }
+        // if (nreceiver.connects.filter(connect => connect._id == senderId).length > 0) {
+        //     return res.status(400).json({ message: 'Already Connected' });
+        // }
 
         if (!nsender) {
             const newConnect = new Connects({ userId: senderId, connects: [{ user: receiver, categories: [] }] });
@@ -195,7 +196,7 @@ app.get('/users/:userId/connects', async (req, res) => {
         const userId = req.params.userId;
 
         // Find the user based on the provided user ID
-        const userConnects = await Connects.findOne({ userId: userId }).populate('connects');
+        const userConnects = await Connects.findOne({ userId: userId }).populate('connects.user');
 
         if (!userConnects) {
             return res.status(404).json({ message: 'User not found' });
@@ -203,23 +204,23 @@ app.get('/users/:userId/connects', async (req, res) => {
 
         // Extract connect details with all fields
         const connects = userConnects.connects.map(connect => ({
-            uid: connect.uid,
-            name: connect.name,
-            email: connect.email,
-            phone: connect.phone,
-            location: connect.location,
-            company: connect.company,
-            role: connect.role,
-            color: connect.color,
-            portfolio: connect.portfolio,
-            linkedin: connect.linkedin,
-            instagram: connect.instagram,
-            facebook: connect.facebook,
-            github: connect.github,
-            quora: connect.quora,
-            medium: connect.medium,
-            stack: connect.stack,
-            x: connect.x
+            uid: connect.user.uid,
+            name: connect.user.name,
+            email: connect.user.email,
+            phone: connect.user.phone,
+            location: connect.user.location,
+            company: connect.user.company,
+            role: connect.user.role,
+            color: connect.user.color,
+            portfolio: connect.user.portfolio,
+            linkedin: connect.user.linkedin,
+            instagram: connect.user.instagram,
+            facebook: connect.user.facebook,
+            github: connect.user.github,
+            quora: connect.user.quora,
+            medium: connect.user.medium,
+            stack: connect.user.stack,
+            x: connect.user.x
         }));
 
         res.status(200).json({ data: connects });
