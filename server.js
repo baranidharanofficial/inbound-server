@@ -32,12 +32,11 @@ const userSchema = new mongoose.Schema({
     medium: String,
     stack: String,
     x: String,
-    connects: [{ type: mongoose.Schema.Types.ObjectId, ref: 'inbound-user' }],
 });
 
 
 const connectSchema = new mongoose.Schema({
-    id: String,
+    userId: String,
     connects: [{ type: mongoose.Schema.Types.ObjectId, ref: 'inbound-user' }],
 });
 
@@ -86,6 +85,18 @@ app.get('/users/:uid', async (req, res) => {
     }
 });
 
+app.get('/users/get-connects/:uid', async (req, res) => {
+    try {
+        const userConnects = await Connects.findOne({ userId: req.params.uid });
+        if (!userConnects) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+        res.json(userConnects);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
 app.post('/users/:receiverId/add-connect/:senderId', async (req, res) => {
     try {
         const { senderId, receiverId } = req.params;
@@ -99,40 +110,32 @@ app.post('/users/:receiverId/add-connect/:senderId', async (req, res) => {
         }
 
         // Find the sender and receiver based on their IDs
-        const nsender = await Connects.find({ id: senderId });
-        const nreceiver = await Connects.find({ id: receiverId });
+        const nsender = await Connects.findOne({ userId: senderId });
+        const nreceiver = await Connects.findOne({ userId: receiverId });
+
+        if (nreceiver.connects.includes(senderId)) {
+            return res.status(400).json({ message: 'Already Connected' });
+        }
 
         if (!nsender) {
-            const newConnect = new Connects({ id: senderId, connects: [receiver] });
+            const newConnect = new Connects({ userId: senderId, connects: [receiver] });
             await newConnect.save();
+            console.log('TEST 1');
         } else {
-            nsender.push(receiver);
+            nsender.connects.push(receiver);
+            await nsender.save();
+            console.log('TEST 2');
         }
 
         if (!nreceiver) {
-            const newConnect = new Connects({ id: receiverId, connects: [sender] });
+            const newConnect = new Connects({ userId: receiverId, connects: [sender] });
             await newConnect.save();
+            console.log('TEST 3');
         } else {
-            nreceiver.push(sender);
+            nreceiver.connects.push(sender);
+            await nreceiver.save();
+            console.log('TEST 4');
         }
-
-        // Check if the sender is already a friend of the receiver
-        if (receiver.connects.includes(senderId)) {
-            return res.status(400).json({ message: 'Sender already added as connect for receiver' });
-        }
-
-        // Add the sender to the receiver's friends list
-        receiver.connects.push(sender);
-        await receiver.save();
-
-        // Check if the receiver is already a friend of the sender
-        if (sender.connects.includes(receiverId)) {
-            return res.status(400).json({ message: 'Receiver already added as connect for sender' });
-        }
-
-        // Add the receiver to the sender's friends list
-        sender.connects.push(receiver);
-        await sender.save();
 
         res.status(200).json({ message: 'Connect added successfully', sender: sender, receiver: receiver });
     } catch (error) {
@@ -147,14 +150,14 @@ app.get('/users/:userId/connects', async (req, res) => {
         const userId = req.params.userId;
 
         // Find the user based on the provided user ID
-        const user = await User.findById(userId).populate('connects');
+        const userConnects = await Connects.findOne({ userId: userId }).populate('connects');
 
-        if (!user) {
+        if (!userConnects) {
             return res.status(404).json({ message: 'User not found' });
         }
 
         // Extract connect details with all fields
-        const connects = user.connects.map(connect => ({
+        const connects = userConnects.connects.map(connect => ({
             uid: connect.uid,
             name: connect.name,
             email: connect.email,
