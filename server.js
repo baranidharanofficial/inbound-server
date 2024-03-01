@@ -86,6 +86,18 @@ app.get('/users/:uid', async (req, res) => {
     }
 });
 
+app.get('/categories/:uid', async (req, res) => {
+    try {
+        const userConnect = await Connects.findOne({ userId: req.params.uid });
+        if (!userConnect) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+        res.json({ categories: userConnect.categories });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
 app.get('/users/get-connects/:uid', async (req, res) => {
     try {
         const userConnects = await Connects.findOne({ userId: req.params.uid });
