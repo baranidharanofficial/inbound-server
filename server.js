@@ -204,7 +204,7 @@ app.get('/users/:userId/connects', async (req, res) => {
 
         // Extract connect details with all fields
         const connects = userConnects.connects.map(connect => ({
-            id: connect.user._id,
+            _id: connect.user._id,
             uid: connect.user.uid,
             name: connect.user.name,
             email: connect.user.email,
