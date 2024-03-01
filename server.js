@@ -221,7 +221,8 @@ app.get('/users/:userId/connects', async (req, res) => {
             quora: connect.user.quora,
             medium: connect.user.medium,
             stack: connect.user.stack,
-            x: connect.user.x
+            x: connect.user.x,
+            categories: connect.categories,
         }));
 
         res.status(200).json({ data: connects });
