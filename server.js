@@ -58,7 +58,7 @@ app.post('/users', async (req, res) => {
         console.log(newUser.phone);
         console.log(newUser.location);
         await newUser.save();
-        res.status(201).json({ message: 'User details uploaded successfully', user: req.body });
+        res.status(201).json({ message: 'User details uploaded successfully', user: newUser });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
@@ -113,7 +113,7 @@ app.post('/users/add-category/:uid/:category', async (req, res) => {
         }
 
         await userConnects.save();
-        res.json(userConnects);
+        res.status(201).json({ data: userConnects.categories });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
