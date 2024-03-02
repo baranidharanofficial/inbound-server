@@ -119,9 +119,14 @@ app.post('/users/add-category/:uid/:category', async (req, res) => {
     }
 });
 
-app.post('/users/add-user-to-category/:uid/:cid/:category', async (req, res) => {
+app.post('/users/add-user-to-category/:uid/:cid', async (req, res) => {
     try {
         // console.log(req.params.category);
+        const { categories } = req.body;
+
+        if (!categories) {
+            return res.status(404).json({ message: 'Categories cannot be null' });
+        }
 
         const userConnects = await Connects.findOne({ userId: req.params.uid });
 
@@ -132,7 +137,7 @@ app.post('/users/add-user-to-category/:uid/:cid/:category', async (req, res) => 
         userConnects.connects.forEach(connect => {
             console.log(connect.user._id.toString());
             if (connect.user._id.toString() === req.params.cid) {
-                connect.categories.push(req.params.category);
+                connect.categories = categories;
             }
         });
 
