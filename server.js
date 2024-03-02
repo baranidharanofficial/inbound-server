@@ -137,7 +137,31 @@ app.post('/users/add-user-to-category/:uid/:cid/:category', async (req, res) => 
         });
 
         await userConnects.save();
-        res.json(userConnects);
+        res.status(200).json(userConnects);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+app.post('/users/remove-user-from-category/:uid/:cid/:category', async (req, res) => {
+    try {
+        // console.log(req.params.category);
+
+        const userConnects = await Connects.findOne({ userId: req.params.uid });
+
+        if (!userConnects) {
+            return res.status(404).json({ message: 'User co not found' });
+        }
+
+        userConnects.connects.forEach(connect => {
+            console.log(connect.user._id.toString());
+            if (connect.user._id.toString() === req.params.cid) {
+                connect.categories.pop(req.params.category);
+            }
+        });
+
+        await userConnects.save();
+        res.status(200).json(userConnects);
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
